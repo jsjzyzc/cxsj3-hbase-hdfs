@@ -2,7 +2,13 @@
 hdfs:
   path: hdfs://118.31.8.230
   user: root
-
+##连接HBase配置
+hbase:
+  config:
+    hbase.zookeeper.quorum: hserver1,hserver2,hserver3
+    hbase.zookeeper.port: 2181
+    hbase.zookeeper.znode: /hbase
+    hbase.client.keyvalue.maxsize: 1572864000
 ###swagger配置（有yml配置和class配置两种方式，本demo采用class配置）
 #swagger:
 #  ##是否开启swagger文档
