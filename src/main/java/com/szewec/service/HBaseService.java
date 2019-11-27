@@ -81,5 +81,35 @@ public interface HBaseService {
      * @throws IOException
      */
     void deleteAllColumn(String tableName, String rowKey) throws IOException;
+
+    /**
+     * 查看表结构
+     *
+     * @param tableName 表名
+     * @throws IOException
+     */
+    List<String> scanTable(String tableName) throws IOException;
+
+    /**
+     * 根据tableName，url 存储数据
+     */
+    void urlInsert(String tableName,String url) throws  IOException;
+
+    /**
+     * 根据tableName，url，html代码 存储数据
+     */
+    void htmlInsert(String tableName,String url,String html) throws IOException;
+
+    /**
+     * 根据tableName，url 查询存储的html代码
+     *
+     */
+    String getHtml(String tableName,String url) throws IOException;
+
+    /**
+     * 根据tableName获取所有的行键
+     *
+     */
+    List<String> getRow(String tableName) throws IOException;
 }
 

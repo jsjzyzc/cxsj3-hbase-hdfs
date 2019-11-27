@@ -2,12 +2,10 @@ package com.szewec.controller;
 
 import com.szewec.utils.HDFSUtils;
 import com.szewec.utils.ResponseUtil;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.compress.utils.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -15,7 +13,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
+
 import javax.servlet.http.HttpServletRequest;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -143,13 +146,12 @@ public class HDFSFileController {
     @PostMapping(value = "/upload")
     @ApiOperation(value = "上传本地文件到HDFS", notes = "上传本地文件到HDFS")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "localFilePath", value = "本地文件路径", paramType = "query", dataType = "string", required = true),
-            @ApiImplicitParam(name = "targetDirector", value = "目标文件夹", paramType = "query", dataType = "string", required = true)
+            @ApiImplicitParam(name = "localFilePath", value = "本地文件路径", paramType = "query", dataType = "string", required = true)
     })
-    public Object upload(String localFilePath, String targetDirector) {
+    public Object upload(String localFilePath) {
         try {
-            if (StringUtils.isNotBlank(localFilePath) && StringUtils.isNotBlank(targetDirector)) {
-                HDFSUtils.copyFromLocalFile(localFilePath, targetDirector);
+            if (StringUtils.isNotBlank(localFilePath)) {
+                HDFSUtils.copyFromLocalFile(localFilePath);
                 return ResponseUtil.successResponse("文件上传成功！");
             } else {
                 return ResponseUtil.failedResponse("文件上传失败！", "本地文件路径或目标文件夹为空！");
@@ -223,6 +225,39 @@ public class HDFSFileController {
             log.error("文件下载异常！", e);
             return ResponseUtil.failedResponse("文件下载异常！", e.getMessage());
         }
+    }
+
+    @PostMapping(value = "/uplocalfile",headers="content-type=multipart/form-data")
+    @ApiOperation(value = "客户端上传文件到hdfs", notes = "客户端上传文件到hdfs")
+    public Object upLocalFile(@ApiParam(value="文件",required=true) MultipartFile file) throws IOException {
+        String fileSpace = "/root/uplocalfile";
+        FileOutputStream fileOutputStream = null;
+        InputStream inputStream = null;
+        try {
+            if (file != null) {
+                String fileName = file.getOriginalFilename();
+                if (StringUtils.isNotBlank(fileName)) {
+                    String finalPath = fileSpace  + "/" + fileName;
+                    File outFile = new File(finalPath);
+                    fileOutputStream = new FileOutputStream(outFile);
+                    inputStream = file.getInputStream();
+                    IOUtils.copy(inputStream, fileOutputStream);
+                    HDFSUtils.copyFromLocalFile(finalPath);
+                    //return ResponseUtil.successResponse("文件上传成功！");
+                }
+            } else {
+                return ResponseUtil.failedResponse("文件上传失败！", "本地文件路径或目标文件夹为空！");
+            }
+        } catch (Exception e) {
+            log.error("文件上传异常！", e);
+            return ResponseUtil.failedResponse("文件上传异常！", e.getMessage());
+        } finally {
+            if (fileOutputStream != null) {
+                fileOutputStream.flush();
+                fileOutputStream.close();
+            }
+        }
+        return ResponseUtil.successResponse("文件上传成功！");
     }
 
 }

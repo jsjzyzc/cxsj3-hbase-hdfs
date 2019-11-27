@@ -21,3 +21,7 @@ hbase:
 #  description: HDFS目录和文件管理
 #  ##文档版本
 #  version: 1.0.0
+
+server:
+  #端口号
+  port: 8888

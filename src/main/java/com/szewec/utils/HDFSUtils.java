@@ -4,14 +4,15 @@ import com.szewec.entity.HDFSResource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.*;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.*;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.util.Progressable;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
+
 import javax.annotation.PostConstruct;
 import java.io.*;
 import java.net.URI;
@@ -253,24 +254,36 @@ public class HDFSUtils {
      * 上传本地文件到HDFS
      *
      * @param localFilePath  本地文件路径
-     * @param targetDirector 目标文件夹
      * @throws Exception
      */
-    public static void copyFromLocalFile(String localFilePath, String targetDirector) throws Exception {
-        //如果目标文件夹不存在则创建
-        if (!resourceIsExist(targetDirector)) {
-            fileSystem.mkdirs(new Path(targetDirector));
-        }
+    public static void copyFromLocalFile(String localFilePath) throws Exception {
+
 
         String fileName = localFilePath.substring(localFilePath.lastIndexOf(File.separator), localFilePath.length());
-        if (resourceIsExist(targetDirector + File.separator + fileName)) {
+        if (resourceIsExist("/root/hadoop/dfs/images" + File.separator + fileName)) {
             throw new Exception("目标目录下已存在同名文件！");
         }
 
         Path localPath = new Path(localFilePath);
-        Path hdfsPath = new Path(targetDirector);
+        Path path = new Path("/root/hadoop/dfs/images");
+
         // 第一个参数是本地文件的路径，第二个则是HDFS的路径
-        fileSystem.copyFromLocalFile(localPath, hdfsPath);
+        try {
+            fileSystem.copyFromLocalFile(localPath, path);
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+        /*
+        try{
+            Path localPath = new Path(localFilePath);
+            Path path = new Path("/root/hadoop/dfs/images");
+            InputStream is = new FileInputStream(localFilePath);
+            FSDataOutputStream os = fileSystem.create(new Path(path+"/"+fileName));
+            IOUtils.copyBytes(is,os,4096);
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+        */
     }
 
 

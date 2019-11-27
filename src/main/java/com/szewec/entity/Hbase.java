@@ -7,7 +7,17 @@ public class Hbase {
     private String rowNey;
     private String column;
     private String startRow;
+
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
+    }
+
     private String stopRow;
+    private String url;
 
     public String getTableName() {
         return tableName;
